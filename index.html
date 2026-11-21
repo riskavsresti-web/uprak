@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Tutorial Instalasi Windows 10 - Praktik TKJ</title>
+</head>
+<body>
+
+  <header>
+    <h1>Tutorial Praktik TKJ: Instalasi Sistem Operasi Windows 10</h1>
+    <p>Panduan instalasi bersih (Clean Install) Windows 10 menggunakan Flashdisk Bootable.</p>
+    <hr>
+  </header>
+
+  <section>
+    <h2>Alat dan Bahan</h2>
+    <ul>
+      <li>1 Unit PC atau Laptop</li>
+      <li>Flashdisk Bootable Windows 10 (minimal kapasitas 8 GB)</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Langkah-Langkah Instalasi</h2>
+    <ol>
+      <li>Colokkan flashdisk bootable ke port USB komputer dalam keadaan mati.</li>
+      <li>Nyalakan komputer lalu tekan tombol masuk <b>BIOS</b> secara berulang (tombol <b>F2</b>, <b>Del</b>, <b>F10</b>, atau <b>Esc</b> sesuai merek motherboard).</li>
+      <li>Buka tab <b>Boot</b>, atur <b>Boot Priority #1</b> menjadi flashdisk, lalu tekan <b>F10 -> Yes</b> untuk menyimpan dan restart.</li>
+      <li>Saat muncul tulisan <i>"Press any key to boot from USB..."</i>, tekan tombol apa saja di keyboard.</li>
+      <li>Pilih bahasa dan format waktu (<i>Indonesian</i>), klik <b>Next -> Install Now</b>.</li>
+      <li>Klik <i>"I don't have a product key"</i> (jika belum punya lisensi), pilih edisi <b>Windows 10 Pro</b>, lalu klik <b>Next</b>.</li>
+      <li>Centang <i>"I accept the license terms"</i> -> <b>Next</b> -> pilih <b>Custom: Install Windows only (advanced)</b>.</li>
+      <li>Atur partisi penyimpanan (klik <b>New</b> untuk membuat partisi sistem baru), pilih partisi utama lalu klik <b>Next</b>.</li>
+      <li>Tunggu proses penyalinan file hingga selesai dan komputer restart otomatis (cabut flashdisk saat restart).</li>
+      <li>Selesaikan pengaturan awal (wilayah, keyboard, nama user, dan password) hingga masuk ke tampilan Desktop.</li>
+    </ol>
+  </section>
+
+  <hr>
+
+  <section>
+    <h2>Form Pertanyaan / Komentar</h2>
+    <form id="formKomentar">
+      <label>Nama Siswa:</label><br>
+      <input type="text" id="nama" placeholder="Masukkan nama" required><br><br>
+      <label>Pertanyaan / Catatan:</label><br>
+      <textarea id="pesan" rows="3" placeholder="Tulis pertanyaan..." required></textarea><br><br>
+      <button type="submit">Kirim</button>
+    </form>
+    <p id="status"></p>
+
+    <h3>Daftar Komentar Masuk:</h3>
+    <ul id="daftarKomentar">
+      <li>Memuat komentar...</li>
+    </ul>
+  </section>
+
+  <footer>
+    <hr>
+    <p>&copy; 2026 Modul Praktik TKJ</p>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const supabaseUrl = 'URL_SUPABASE_KAMU';
+    const supabaseKey = 'ANON_KEY_SUPABASE_KAMU';
+    const db = supabase.createClient(supabaseUrl, supabaseKey);
+
+    async function muatKomentar() {
+      const daftarEl = document.getElementById('daftarKomentar');
+      const { data, error } = await db.from('komentar').select('*').order('id', { ascending: false });
+
+      if (error) { daftarEl.innerHTML = '<li>Error: ' + error.message + '</li>'; return; }
+      if (data.length === 0) { daftarEl.innerHTML = '<li>Belum ada komentar.</li>'; return; }
+
+      daftarEl.innerHTML = '';
+      data.forEach(item => {
+        const li = document.createElement('li');
+        li.innerHTML = `<b>${item.nama}</b>: ${item.pesan}`;
+        daftarEl.appendChild(li);
+      });
+    }
+
+    document.getElementById('formKomentar').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const namaInput = document.getElementById('nama').value;
+      const pesanInput = document.getElementById('pesan').value;
+      const statusTeks = document.getElementById('status');
+
+      statusTeks.innerText = "Mengirim data...";
+      const { error } = await db.from('komentar').insert([{ nama: namaInput, pesan: pesanInput }]);
+
+      if (error) {
+        statusTeks.innerText = "Gagal mengirim: " + error.message;
+      } else {
+        statusTeks.innerText = "Berhasil! Komentar tersimpan.";
+        document.getElementById('formKomentar').reset();
+        muatKomentar();
+      }
+    });
+
+    muatKomentar();
+  </script>
+
+</body>
+</html>
